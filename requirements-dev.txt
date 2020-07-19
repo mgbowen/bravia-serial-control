@@ -1,0 +1,6 @@
+# Dependency versions are based on those in Debian buster's repos
+black>=18.9b0
+isort<5,>=4.2.5  # <5 is to satisfy pylint dependency
+mypy>=0.670
+pylint>=2.2.2
+setuptools>=40.8.0

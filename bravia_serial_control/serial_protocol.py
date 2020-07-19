@@ -1,10 +1,9 @@
 import logging
-from typing import Iterable, List
+from typing import Iterable, Sequence
 
 import serial
 
 from .util import dump_bytes_to_str
-
 
 _BRAVIA_READ_REQUEST_HEADER_BYTE = 0x83
 _BRAVIA_WRITE_REQUEST_HEADER_BYTE = 0x8C
@@ -17,11 +16,12 @@ _BRAVIA_REQUEST_CATEGORY_BYTE = 0x00
 _BRAVIA_RESPONSE_HEADER_BYTE = 0x70
 
 
-class BraviaSerialPort:
+class BraviaDisplaySerialPort:
     """
     Implements the low-level serial protocol for communicating with a Sony
-    Bravia device.
+    Bravia display.
     """
+
     def __init__(self, serial_port: serial.Serial):
         self.serial_port = serial_port
         self._logger = logging.getLogger(__name__)
@@ -43,11 +43,15 @@ class BraviaSerialPort:
         ]
         message.append(_calculate_checksum(message))
 
-        self._logger.debug("Sending Bravia read request on %s: %s", self.serial_port.name, dump_bytes_to_str(message))
+        self._logger.debug(
+            "Sending Bravia read request on %s: %s",
+            self.serial_port.name,
+            dump_bytes_to_str(message),
+        )
         self.serial_port.write(message)
         return self._get_read_request_response()
 
-    def request_write(self, function_byte: int, payload: Iterable[int]) -> None:
+    def request_write(self, function_byte: int, payload: Sequence[int]) -> None:
         """
         Sends a write request using the specified function byte and
         corresponding payload. Does not return a response.
@@ -70,7 +74,11 @@ class BraviaSerialPort:
         ]
         message.append(_calculate_checksum(message))
 
-        self._logger.debug("Sending Bravia write request on %s: %s", self.serial_port.name, dump_bytes_to_str(message))
+        self._logger.debug(
+            "Sending Bravia write request on %s: %s",
+            self.serial_port.name,
+            dump_bytes_to_str(message),
+        )
         self.serial_port.write(message)
         self._get_write_request_response()
 
@@ -86,7 +94,7 @@ class BraviaSerialPort:
 
         # Read the response payload
         payload_length = initial_response_bytes[2]
-        payload_with_checksum = self.serial_port.read(size=payload_length)
+        payload_with_checksum: bytes = self.serial_port.read(size=payload_length)
         if len(payload_with_checksum) != payload_length:
             raise RuntimeError(
                 (
@@ -127,10 +135,8 @@ class BraviaSerialPort:
                 f"0x{_BRAVIA_RESPONSE_HEADER_BYTE:02X}, got 0x{response_header:02X})"
             )
 
-        response_answer, checksum = raw_response[1:]
-
         _validate_payload_checksum(raw_response)
-        _validate_response_answer_byte(response_answer)
+        _validate_response_answer_byte(raw_response[1])
 
         self._logger.debug(
             "Received Bravia response on %s: %s",
@@ -141,15 +147,17 @@ class BraviaSerialPort:
 
 def _validate_function_byte(function_byte: int) -> None:
     if function_byte < 0 or function_byte > 255:
-        raise ValueError(f"Invalid function (expected 0 <= function <= 255, got {function})")
+        raise ValueError(
+            f"Invalid function (expected 0 <= function <= 255, got {function_byte})"
+        )
 
 
-def _calculate_checksum(payload: Iterable[int]) -> None:
+def _calculate_checksum(payload: Iterable[int]) -> int:
     # Checksum is the LSB of the sum of the payload bytes
     return sum(payload) & 0xFF
 
 
-def _validate_payload_checksum(payload_with_checksum: bytes) -> None:
+def _validate_payload_checksum(payload_with_checksum: Sequence[int]) -> None:
     # Checksum is in last byte and is
     expected_checksum = _calculate_checksum(payload_with_checksum[:-1])
     actual_checksum = payload_with_checksum[-1]

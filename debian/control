@@ -1,0 +1,12 @@
+Source: bravia-serial-control
+Section: unknown
+Priority: optional
+Maintainer: Matthew Bowen <matthew@mgbowen.com>
+Build-Depends: debhelper (>=11~), dh-python,
+ python3, black, mypy, pylint3, python3-isort, python3-setuptools
+Standards-Version: 4.1.4
+
+Package: python3-bravia-serial-control
+Architecture: all
+Depends: python3-serial, ${python3:Depends} ${misc:Depends}
+Description: A Python library for controlling Sony Bravia displays with an RS-232C port.

@@ -1,0 +1,2 @@
+# Dependency versions are based on those in Debian buster's repos
+pyserial>=3.4

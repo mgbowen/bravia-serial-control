@@ -1,1 +1,15 @@
+/build/
+
+.mypy_cache/
 __pycache__/
+*.egg-info/
+.pybuild/
+
+/debian/.debhelper/
+/debian/python3-bravia-serial-control/
+
+/debian/debhelper-build-stamp
+/debian/files
+/debian/python3-bravia-serial-control.postinst.debhelper
+/debian/python3-bravia-serial-control.prerm.debhelper
+/debian/python3-bravia-serial-control.substvars

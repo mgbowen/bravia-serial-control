@@ -32,7 +32,7 @@ def throttled_request(f):
 
                 if secs_since_last_request < COMMAND_INTERVAL_SECS:
                     secs_to_wait = COMMAND_INTERVAL_SECS - secs_since_last_request
-                    logging.info("Throttling for %3f seconds", secs_to_wait)
+                    logging.info("Throttling for %.3f seconds", secs_to_wait)
                     time.sleep(secs_to_wait)
 
             return_value = f(*args, **kwargs)
